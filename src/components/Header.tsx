@@ -44,7 +44,6 @@ export const Header: React.FC<HeaderProps> = ({
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-400">Emissão por CPF, Scanner de Portaria & Google Sheets Sync</p>
             </div>
           </div>
 

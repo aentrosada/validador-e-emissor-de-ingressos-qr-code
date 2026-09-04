@@ -121,7 +121,7 @@ export const ParticipantPortal: React.FC<ParticipantPortalProps> = ({
             </div>
             <h2 className="text-xl font-bold">Portal de Acesso ao Evento</h2>
             <p className="text-xs text-indigo-200 mt-1">
-              Informe o seu CPF para acessar seus ingressos ou o leitor de QR Codes (Administrador).
+              Informe o seu CPF para acessar seus ingressos ou o leitor de QR Codes.
             </p>
           </div>
 
