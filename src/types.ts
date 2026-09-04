@@ -1,4 +1,4 @@
-export type TipoIngresso = 1 | 2 | 3;
+﻿export type TipoIngresso = 1 | 2 | 3;
 
 export interface Ingresso {
   id: string;
@@ -6,17 +6,18 @@ export interface Ingresso {
   email: string;
   telefone: string;
   cpf: string;
-  tipo: TipoIngresso; // 1 = Sábado, 2 = Domingo, 3 = Sábado e Domingo (Passaporte)
+  tipo: TipoIngresso; // 1 = Sabado, 2 = Domingo, 3 = Passaporte (Sabado e Domingo)
   situacao: string; // "LIBERADO", "PENDENTE", "CANCELADO", etc.
-  uuid: string; // e.g. "axd-gtl-yyu"
-  dia1?: string; // Check-in timestamp Sábado, e.g. "2025-05-11 20:31"
-  dia2?: string; // Check-in timestamp Domingo
+  uuid_dia1?: string; // UUID unico para QR Code do Sabado (tipo 1 ou 3)
+  uuid_dia2?: string; // UUID unico para QR Code do Domingo (tipo 2 ou 3)
+  dia1?: string; // Timestamp do check-in no Sabado
+  dia2?: string; // Timestamp do check-in no Domingo
   isAdmin?: boolean;
 }
 
 export interface ValidarRequest {
   uuid: string;
-  dia: 1 | 2; // 1 = Sábado, 2 = Domingo
+  dia: 1 | 2; // 1 = Sabado, 2 = Domingo
 }
 
 export interface ValidarResponse {

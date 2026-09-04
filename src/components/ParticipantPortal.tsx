@@ -37,15 +37,19 @@ export const ParticipantPortal: React.FC<ParticipantPortalProps> = ({
 
   // Generate QR Code images if user is logged in
   useEffect(() => {
-    if (user && user.uuid) {
+    if (user) {
       const loadQRs = async () => {
-        if (user.tipo === 1 || user.tipo === 3) {
-          const sabadoData = await generateQRCodeDataUrl(user.uuid);
+        if ((user.tipo === 1 || user.tipo === 3) && user.uuid_dia1) {
+          const sabadoData = await generateQRCodeDataUrl(user.uuid_dia1);
           setQrSabadoUrl(sabadoData);
+        } else {
+          setQrSabadoUrl('');
         }
-        if (user.tipo === 2 || user.tipo === 3) {
-          const domingoData = await generateQRCodeDataUrl(user.uuid);
+        if ((user.tipo === 2 || user.tipo === 3) && user.uuid_dia2) {
+          const domingoData = await generateQRCodeDataUrl(user.uuid_dia2);
           setQrDomingoUrl(domingoData);
+        } else {
+          setQrDomingoUrl('');
         }
       };
       loadQRs();
@@ -263,9 +267,9 @@ export const ParticipantPortal: React.FC<ParticipantPortalProps> = ({
                     )}
 
                     <div className="space-y-1">
-                      <p className="text-xs text-slate-400">UUID do Ingresso:</p>
+                      <p className="text-xs text-slate-400">UUID do Ingresso (Sábado):</p>
                       <p className="font-mono text-sm font-bold text-indigo-300 bg-slate-950 border border-slate-800 px-3 py-1 rounded-lg">
-                        {user.uuid}
+                        {user.uuid_dia1 || '—'}
                       </p>
                     </div>
 
@@ -330,9 +334,9 @@ export const ParticipantPortal: React.FC<ParticipantPortalProps> = ({
                     )}
 
                     <div className="space-y-1">
-                      <p className="text-xs text-slate-400">UUID do Ingresso:</p>
+                      <p className="text-xs text-slate-400">UUID do Ingresso (Domingo):</p>
                       <p className="font-mono text-sm font-bold text-purple-300 bg-slate-950 border border-slate-800 px-3 py-1 rounded-lg">
-                        {user.uuid}
+                        {user.uuid_dia2 || '—'}
                       </p>
                     </div>
 
