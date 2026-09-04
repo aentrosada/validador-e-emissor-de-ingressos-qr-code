@@ -236,9 +236,19 @@ export const ParticipantPortal: React.FC<ParticipantPortalProps> = ({
               <span>Seus QR Codes de Acesso</span>
             </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* SÁBADO QR CODE CARD (if Tipo 1 or Tipo 3) */}
-              {(user.tipo === 1 || user.tipo === 3) && (
+            {/* Check if user has any active QR Code available */}
+            {(!user.uuid_dia1 && !user.uuid_dia2) ? (
+              <div className="bg-slate-900 border border-amber-500/30 rounded-2xl p-8 text-center space-y-3">
+                <AlertCircle className="w-12 h-12 text-amber-400 mx-auto" />
+                <h4 className="text-lg font-bold text-white">Nenhum QR Code disponível no momento</h4>
+                <p className="text-xs text-slate-400 max-w-md mx-auto">
+                  Os seus dados foram localizados, porém os ingressos para os dias do evento ainda estão sendo processados ou a situação não foi liberada. Entre em contato com a organização do evento.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* SÁBADO QR CODE CARD (if Tipo 1 or Tipo 3) */}
+                {(user.tipo === 1 || user.tipo === 3) && user.uuid_dia1 && (
                 <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl flex flex-col justify-between">
                   <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-4 text-white">
                     <div className="flex items-center justify-between">
@@ -305,7 +315,7 @@ export const ParticipantPortal: React.FC<ParticipantPortalProps> = ({
               )}
 
               {/* DOMINGO QR CODE CARD (if Tipo 2 or Tipo 3) */}
-              {(user.tipo === 2 || user.tipo === 3) && (
+              {(user.tipo === 2 || user.tipo === 3) && user.uuid_dia2 && (
                 <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl flex flex-col justify-between">
                   <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-4 text-white">
                     <div className="flex items-center justify-between">
@@ -371,6 +381,7 @@ export const ParticipantPortal: React.FC<ParticipantPortalProps> = ({
                 </div>
               )}
             </div>
+            )}
           </div>
         </div>
       )}

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { ValidarResponse } from '../types';
 import {
@@ -157,18 +157,18 @@ export const PortariaScanner: React.FC = () => {
 
       if (data.status === 'sucesso') {
         playAudioBeep('success');
-        // Popup 4s visible, 10s total cooldown
+        // Popup 4s visivel, 10s total de espera para nova leitura
         startCooldown(10, 4, data);
       } else {
         playAudioBeep('error');
-        // Popup 3s visible, 3s total cooldown
-        startCooldown(3, 3, data);
+        // Popup 3s visivel, 2s para reiniciar leitura (ou 3s acompanhando o popup)
+        startCooldown(2, 3, data);
       }
     } catch (err: any) {
       const errorObj: ValidarResponse = { status: 'erro', mensagem: 'Erro de comunicacao com o servidor.' };
       setScanHistory(prev => [errorObj, ...prev.slice(0, 19)]);
       playAudioBeep('error');
-      startCooldown(3, 3, errorObj);
+      startCooldown(2, 3, errorObj);
     } finally {
       setValidating(false);
     }

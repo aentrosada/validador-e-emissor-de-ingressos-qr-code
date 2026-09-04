@@ -1,4 +1,4 @@
-﻿import express from 'express';
+import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { randomUUID } from 'crypto';
@@ -40,7 +40,7 @@ function ensureUUIDs(item: Ingresso): Ingresso {
 
 async function startServer() {
   const app = express();
-  const PORT = process.env.PORT || 3000;
+  const PORT = Number(process.env.PORT) || 3000;
   const ADMIN_CPF = process.env.ADMIN_CPF || '39784759870';
 
   app.use(express.json());
