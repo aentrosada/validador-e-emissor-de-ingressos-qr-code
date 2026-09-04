@@ -87,7 +87,7 @@ function ensureUUIDs(item: Ingresso): Ingresso {
 async function startServer() {
   const app = express();
   const PORT = Number(process.env.PORT) || 3000;
-  const ADMIN_CPF = process.env.ADMIN_CPF || '39784759870';
+  const ADMIN_CPF = (process.env.ADMIN_CPF || '').trim();
   const SHEETS_SYNC_URL = (process.env.SHEETS_SYNC_URL || '').trim();
 
   // Função para sincronizar dados diretamente com a planilha Google via Apps Script Web App
@@ -169,7 +169,8 @@ async function startServer() {
     }
 
     const cleanedSearchCPF = cleanCPF(cpf);
-    const isAdmin = cleanedSearchCPF === cleanCPF(ADMIN_CPF);
+    const cleanedAdminCPF = cleanCPF(ADMIN_CPF);
+    const isAdmin = Boolean(cleanedAdminCPF) && cleanedSearchCPF === cleanedAdminCPF;
 
     if (isAdmin) {
       const adminEntry = dbIngressos.find(item => cleanCPF(item.cpf) === cleanedSearchCPF) || {
