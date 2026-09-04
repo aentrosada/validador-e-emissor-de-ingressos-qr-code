@@ -11,7 +11,6 @@ import {
   AlertCircle,
   CheckCircle2,
   Clock,
-  Sparkles,
   QrCode,
   Search,
 } from 'lucide-react';
@@ -90,7 +89,7 @@ export const ParticipantPortal: React.FC<ParticipantPortalProps> = ({
       }
 
       const loggedUser: Ingresso = data.ingresso;
-      const isAdmin = !!data.isAdmin || loggedUser.cpf === '12345678910';
+      const isAdmin = !!data.isAdmin;
       onLoginSuccess(loggedUser, isAdmin);
     } catch (err: any) {
       setErrorMsg('Erro ao conectar ao servidor. Tente novamente.');
@@ -106,12 +105,6 @@ export const ParticipantPortal: React.FC<ParticipantPortalProps> = ({
     a.click();
   };
 
-  // Pre-fill demo CPFs for fast testing
-  const setDemoCPF = (cpf: string) => {
-    const formatted = formatCPF(cpf);
-    setCpfInput(formatted);
-    handleLoginWithCPF(formatted);
-  };
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
@@ -178,67 +171,17 @@ export const ParticipantPortal: React.FC<ParticipantPortalProps> = ({
               </button>
             </form>
 
-            {/* DEMO ACCOUNTS HELPER */}
+            {/* BOTÃO PROGRAMAÇÃO */}
             <div className="pt-4 border-t border-slate-800">
-              <p className="text-[11px] font-semibold text-slate-400 mb-2.5 uppercase tracking-wider flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" /> Atalhos de Teste para Login:
-              </p>
-              <div className="grid grid-cols-1 gap-2 text-xs">
-                {/* ADMIN DEMO BUTTON */}
-                <button
-                  id="btn-demo-admin"
-                  onClick={() => setDemoCPF('12345678910')}
-                  className="flex items-center justify-between p-2.5 rounded-lg bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-500/40 text-left transition-all group"
-                >
-                  <div>
-                    <span className="font-semibold text-emerald-300 block group-hover:text-emerald-200 flex items-center gap-1">
-                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" /> Administrador da Portaria
-                    </span>
-                    <span className="text-[10px] text-emerald-400/80 font-mono">
-                      CPF: 123.456.789-10 • Acesso Completo (Scanner + Planilha)
-                    </span>
-                  </div>
-                  <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded font-bold border border-emerald-500/30">
-                    ADMINISTRADOR
-                  </span>
-                </button>
-
-                <button
-                  id="btn-demo-ronaldo"
-                  onClick={() => setDemoCPF('39784759875')}
-                  className="flex items-center justify-between p-2.5 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 text-left transition-all group"
-                >
-                  <div>
-                    <span className="font-semibold text-slate-200 block group-hover:text-indigo-400">
-                      Ronaldo Fenomeno
-                    </span>
-                    <span className="text-[10px] text-slate-400 font-mono">
-                      CPF: 397.847.598-75 • Passaporte (Sábado + Domingo)
-                    </span>
-                  </div>
-                  <span className="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded font-medium">
-                    PARTICIPANTE
-                  </span>
-                </button>
-
-                <button
-                  id="btn-demo-marta"
-                  onClick={() => setDemoCPF('12345678901')}
-                  className="flex items-center justify-between p-2.5 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 text-left transition-all group"
-                >
-                  <div>
-                    <span className="font-semibold text-slate-200 block group-hover:text-indigo-400">
-                      Marta Vieira
-                    </span>
-                    <span className="text-[10px] text-slate-400 font-mono">
-                      CPF: 123.456.789-01 • Apenas Sábado (Tipo 1)
-                    </span>
-                  </div>
-                  <span className="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded font-medium">
-                    PARTICIPANTE
-                  </span>
-                </button>
-              </div>
+              <a
+                href="https://drive.google.com/file/d/1xQEy0MQUoilag5Th7_CvUpEUZaA6JkxM/view?usp=sharing"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 hover:text-white font-semibold py-3 rounded-xl transition-all text-sm"
+              >
+                <Calendar className="w-4 h-4 text-indigo-400" />
+                <span>Acesse a Programação</span>
+              </a>
             </div>
           </div>
         </div>
@@ -257,11 +200,6 @@ export const ParticipantPortal: React.FC<ParticipantPortalProps> = ({
                   <span className="inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                     <ShieldCheck className="w-3.5 h-3.5" /> {user.situacao}
                   </span>
-                  {user.cpf === '12345678910' && (
-                    <span className="inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                      PAINEL ADMINISTRATIVO ATIVO
-                    </span>
-                  )}
                 </div>
                 <p className="text-xs text-slate-400 mt-1 font-mono">
                   CPF: {formatCPF(user.cpf)} • {user.email} • {user.telefone}

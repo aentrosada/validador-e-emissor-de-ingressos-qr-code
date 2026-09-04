@@ -1,8 +1,8 @@
 import React from 'react';
-import { QrCode, ScanLine, Table, Code2, ShieldCheck, Ticket, LogOut, User, ShieldAlert } from 'lucide-react';
+import { QrCode, ScanLine, Table, ShieldCheck, Ticket, LogOut, User, ShieldAlert } from 'lucide-react';
 import { Ingresso } from '../types';
 
-export type ActiveTab = 'portal' | 'scanner' | 'planilha' | 'python';
+export type ActiveTab = 'portal' | 'scanner' | 'planilha';
 
 interface HeaderProps {
   activeTab: ActiveTab;
@@ -33,7 +33,7 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-lg font-bold tracking-tight text-white">Event Pass & QR Scanner</h1>
+                <h1 className="text-lg font-bold tracking-tight text-white">Portal de Acesso ao Evento</h1>
                 {isAdmin ? (
                   <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2.5 py-0.5 rounded-full">
                     <ShieldAlert className="w-3 h-3 text-purple-400" /> MODO ADMIN
@@ -52,7 +52,7 @@ export const Header: React.FC<HeaderProps> = ({
           {user ? (
             <div className="flex items-center gap-3 flex-wrap">
               <nav className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800/80 overflow-x-auto">
-                {/* Tab: Meus Ingressos (Always visible to logged-in user) */}
+                {/* Tab: Ingressos (Always visible to logged-in user) */}
                 <button
                   id="tab-portal"
                   onClick={() => setActiveTab('portal')}
@@ -63,7 +63,7 @@ export const Header: React.FC<HeaderProps> = ({
                   }`}
                 >
                   <QrCode className="w-4 h-4" />
-                  <span>{isAdmin ? 'Portal Admin' : 'Meus Ingressos'}</span>
+                  <span>INGRESSOS</span>
                 </button>
 
                 {/* ADMIN-ONLY TABS */}
@@ -98,19 +98,6 @@ export const Header: React.FC<HeaderProps> = ({
                           {totalIngressos}
                         </span>
                       )}
-                    </button>
-
-                    <button
-                      id="tab-python"
-                      onClick={() => setActiveTab('python')}
-                      className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
-                        activeTab === 'python'
-                          ? 'bg-purple-600 text-white shadow-sm font-semibold'
-                          : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-                      }`}
-                    >
-                      <Code2 className="w-4 h-4" />
-                      <span>Exportar Python/Flask</span>
                     </button>
                   </>
                 )}

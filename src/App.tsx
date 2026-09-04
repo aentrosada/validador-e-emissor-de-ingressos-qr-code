@@ -3,9 +3,8 @@ import { Header, ActiveTab } from './components/Header';
 import { ParticipantPortal } from './components/ParticipantPortal';
 import { PortariaScanner } from './components/PortariaScanner';
 import { SpreadsheetManager } from './components/SpreadsheetManager';
-import { PythonExportGuide } from './components/PythonExportGuide';
 import { Ingresso } from './types';
-import { Ticket, ShieldCheck, Github, ExternalLink } from 'lucide-react';
+import { Ticket } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('portal');
@@ -134,10 +133,6 @@ export default function App() {
               onRefreshData={fetchIngressos}
             />
           )}
-
-          {currentUser && isAdmin && activeTab === 'python' && (
-            <PythonExportGuide />
-          )}
         </main>
       </div>
 
@@ -148,24 +143,13 @@ export default function App() {
             <div className="w-6 h-6 rounded-lg bg-indigo-600 flex items-center justify-center text-white">
               <Ticket className="w-3.5 h-3.5" />
             </div>
-            <span className="font-bold text-slate-200">Validador de Ingressos QR Code</span>
+            <span className="font-bold text-slate-200">Portal de Acesso ao Evento</span>
             <span className="text-slate-600">•</span>
             <span>Google Sheets Sync & Event Check-in</span>
           </div>
 
           <div className="flex items-center gap-4 text-[11px] text-slate-500">
             <span>Sábado (Dia 1) & Domingo (Dia 2)</span>
-            {currentUser && isAdmin && (
-              <>
-                <span className="text-slate-700">|</span>
-                <button
-                  onClick={() => setActiveTab('python')}
-                  className="text-indigo-400 hover:underline flex items-center gap-1"
-                >
-                  <span>Exportar Flask / Render</span>
-                </button>
-              </>
-            )}
           </div>
         </div>
       </footer>
