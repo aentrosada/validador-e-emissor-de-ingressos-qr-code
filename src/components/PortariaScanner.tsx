@@ -157,18 +157,18 @@ export const PortariaScanner: React.FC = () => {
 
       if (data.status === 'sucesso') {
         playAudioBeep('success');
-        // Popup 7s visivel, 10s total de espera para nova leitura
-        startCooldown(10, 7, data);
+        // Popup 10s visivel, 10s total de espera para nova leitura
+        startCooldown(10, 10, data);
       } else {
         playAudioBeep('error');
-        // Popup 5s visivel, 5s total de espera para nova leitura
-        startCooldown(5, 5, data);
+        // Popup 6s visivel, 6s total de espera para nova leitura
+        startCooldown(6, 6, data);
       }
     } catch (err: any) {
       const errorObj: ValidarResponse = { status: 'erro', mensagem: 'Erro de comunicação com o servidor.' };
       setScanHistory(prev => [errorObj, ...prev.slice(0, 19)]);
       playAudioBeep('error');
-      startCooldown(5, 5, errorObj);
+      startCooldown(6, 6, errorObj);
     } finally {
       setValidating(false);
     }

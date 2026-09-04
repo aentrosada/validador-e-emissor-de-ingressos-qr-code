@@ -15,7 +15,12 @@ let dbIngressos: Ingresso[] = [...INITIAL_INGRESSOS];
 function formatTimestamp(): string {
   const now = new Date();
   const pad = (n: number) => n.toString().padStart(2, '0');
-  return `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  const dia = pad(now.getDate());
+  const mes = pad(now.getMonth() + 1);
+  const ano = now.getFullYear();
+  const horas = pad(now.getHours());
+  const minutos = pad(now.getMinutes());
+  return `${dia}/${mes}/${ano} às ${horas}:${minutos}`;
 }
 
 function cleanCPF(cpf: string): string {
@@ -183,22 +188,34 @@ async function startServer() {
       if (me.dia1 && me.dia1.trim() !== '') {
         return res.status(400).json({
           status: 'erro',
-          mensagem: `Ingresso já utilizado no SÁBADO!\nCheck-in realizado em **${me.dia1}**`,
+          mensagem: `Ingresso já utilizado.\nCheck-in realizado em **${me.dia1}**`,
           ingresso: me,
         });
       }
       me.dia1 = currentTimestamp;
-      return res.json({ status: 'sucesso', mensagem: 'Entrada Liberada no SÁBADO!', ingresso: me, timestamp: currentTimestamp, diaValidado: 1 });
+      return res.json({ 
+        status: 'sucesso', 
+        mensagem: `Entrada Liberada no SÁBADO!\nCheck in realizado em **${currentTimestamp}**`, 
+        ingresso: me, 
+        timestamp: currentTimestamp, 
+        diaValidado: 1 
+      });
     } else {
       if (me.dia2 && me.dia2.trim() !== '') {
         return res.status(400).json({
           status: 'erro',
-          mensagem: `Ingresso já utilizado no DOMINGO!\nCheck-in realizado em **${me.dia2}**`,
+          mensagem: `Ingresso já utilizado.\nCheck-in realizado em **${me.dia2}**`,
           ingresso: me,
         });
       }
       me.dia2 = currentTimestamp;
-      return res.json({ status: 'sucesso', mensagem: 'Entrada Liberada no DOMINGO!', ingresso: me, timestamp: currentTimestamp, diaValidado: 2 });
+      return res.json({ 
+        status: 'sucesso', 
+        mensagem: `Entrada Liberada no DOMINGO!\nCheck in realizado em **${currentTimestamp}**`, 
+        ingresso: me, 
+        timestamp: currentTimestamp, 
+        diaValidado: 2 
+      });
     }
   });
 
