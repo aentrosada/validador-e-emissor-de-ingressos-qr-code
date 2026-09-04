@@ -47,6 +47,56 @@ async function startServer() {
   const app = express();
   const PORT = Number(process.env.PORT) || 3000;
   const ADMIN_CPF = process.env.ADMIN_CPF || '39784759870';
+  const SHEETS_SYNC_URL = process.env.SHEETS_SYNC_URL || '';
+
+  // Função para sincronizar dados diretamente com a planilha Google via Apps Script Web App
+  async function syncCheckinToGoogleSheet(params: {
+    cpf: string;
+    dia: 1 | 2;
+    timestamp: string;
+    uuid: string;
+    tipo?: number;
+  }) {
+    if (!SHEETS_SYNC_URL) return;
+    try {
+      await fetch(SHEETS_SYNC_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'checkin',
+          ...params,
+        }),
+      });
+      console.log(`[Google Sheets Sync] Check-in sincronizado para CPF ${params.cpf} no Dia ${params.dia}`);
+    } catch (err) {
+      console.error('[Google Sheets Sync Error]:', err);
+    }
+  }
+
+  // Função para sincronizar/gravar UUIDs gerados de volta na planilha Google
+  async function syncUUIDsToGoogleSheet(items: Ingresso[]) {
+    if (!SHEETS_SYNC_URL) return;
+    try {
+      await fetch(SHEETS_SYNC_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'sync_uuids',
+          ingressos: items.map(x => ({
+            cpf: cleanCPF(x.cpf),
+            tipo: x.tipo,
+            uuid_dia1: x.uuid_dia1 || '',
+            uuid_dia2: x.uuid_dia2 || '',
+            dia1: x.dia1 || '',
+            dia2: x.dia2 || '',
+          })),
+        }),
+      });
+      console.log(`[Google Sheets Sync] UUIDs sincronizados na planilha (${items.length} ingressos)`);
+    } catch (err) {
+      console.error('[Google Sheets Sync Error]:', err);
+    }
+  }
 
   app.use(express.json());
 
@@ -193,6 +243,16 @@ async function startServer() {
         });
       }
       me.dia1 = currentTimestamp;
+      
+      // Sincroniza em segundo plano com a planilha Google
+      syncCheckinToGoogleSheet({
+        cpf: me.cpf,
+        dia: 1,
+        timestamp: currentTimestamp,
+        uuid: me.uuid_dia1 || cleanedUUID,
+        tipo: me.tipo,
+      });
+
       return res.json({ 
         status: 'sucesso', 
         mensagem: `Entrada Liberada no SÁBADO!\nCheck in realizado em **${currentTimestamp}**`, 
@@ -209,6 +269,16 @@ async function startServer() {
         });
       }
       me.dia2 = currentTimestamp;
+
+      // Sincroniza em segundo plano com a planilha Google
+      syncCheckinToGoogleSheet({
+        cpf: me.cpf,
+        dia: 2,
+        timestamp: currentTimestamp,
+        uuid: me.uuid_dia2 || cleanedUUID,
+        tipo: me.tipo,
+      });
+
       return res.json({ 
         status: 'sucesso', 
         mensagem: `Entrada Liberada no DOMINGO!\nCheck in realizado em **${currentTimestamp}**`, 
@@ -251,6 +321,9 @@ async function startServer() {
         }
       });
     }
+
+    // Sincroniza os UUIDs gerados de volta com a planilha do Google Sheets (se configurado)
+    syncUUIDsToGoogleSheet(dbIngressos);
 
     res.json({ status: 'sucesso', mensagem: `${ingressos.length} ingressos processados.`, total: dbIngressos.length, ingressos: dbIngressos });
   });
