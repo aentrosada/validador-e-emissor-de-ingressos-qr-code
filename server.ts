@@ -28,7 +28,8 @@ function cleanCPF(cpf: string): string {
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = process.env.PORT || 3000;
+  const ADMIN_CPF = process.env.ADMIN_CPF || '39784759870';
 
   app.use(express.json());
 
@@ -58,7 +59,7 @@ async function startServer() {
     }
 
     const cleanedSearchCPF = cleanCPF(cpf);
-    const isAdmin = cleanedSearchCPF === '12345678910';
+    const isAdmin = cleanedSearchCPF === cleanCPF(ADMIN_CPF);
 
     let matched = dbIngressos.find(
       (item) => cleanCPF(item.cpf) === cleanedSearchCPF
@@ -71,8 +72,8 @@ async function startServer() {
           id: 'admin-master',
           nome: 'Administrador da Portaria',
           email: 'admin@evento.com.br',
-          telefone: '5511999998888',
-          cpf: '12345678910',
+          telefone: '',
+          cpf: ADMIN_CPF,
           tipo: 3,
           situacao: 'LIBERADO',
           uuid: 'admin-pass-999',

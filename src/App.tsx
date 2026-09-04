@@ -27,7 +27,7 @@ export default function App() {
         .then((data) => {
           if (data.sucesso && data.ingresso) {
             const user: Ingresso = data.ingresso;
-            const adminFlag = !!data.isAdmin || user.cpf === '12345678910';
+            const adminFlag = !!data.isAdmin;
             setCurrentUser(user);
             setIsAdmin(adminFlag);
           } else {
