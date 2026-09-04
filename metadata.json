@@ -1,0 +1,6 @@
+{
+  "name": "Validador e Emissor de Ingressos QR Code",
+  "description": "Sistema de emissão e validação de ingressos por QR Code para eventos com leitura de planilha (Google Sheets/CSV), portal do participante por CPF e scanner de portaria.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
