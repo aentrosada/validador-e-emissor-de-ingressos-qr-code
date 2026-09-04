@@ -152,9 +152,16 @@ async function startServer() {
 
   app.use(express.json());
 
-  // Health check
+  // Health check & Admin status check
   app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', timestamp: formatTimestamp() });
+    const currentAdminEnv = (process.env.ADMIN_CPF || '').trim();
+    const hasAdminConfigured = Boolean(cleanCPF(currentAdminEnv));
+    res.json({ 
+      status: 'ok', 
+      timestamp: formatTimestamp(),
+      adminConfigured: hasAdminConfigured,
+      adminLength: cleanCPF(currentAdminEnv).length,
+    });
   });
 
   // Get all ingressos
@@ -173,6 +180,8 @@ async function startServer() {
     const cleanedSearchCPF = cleanCPF(cpf);
     const cleanedAdminCPF = cleanCPF(currentAdminEnv);
     const isAdmin = Boolean(cleanedAdminCPF) && cleanedSearchCPF === cleanedAdminCPF;
+
+    console.log(`[LOGIN ATTEMPT] CPF digitado: ${cleanedSearchCPF} | Admin configurado? ${Boolean(cleanedAdminCPF)} (Tamanho: ${cleanedAdminCPF.length}) | É Admin? ${isAdmin}`);
 
     if (isAdmin) {
       const adminEntry = dbIngressos.find(item => cleanCPF(item.cpf) === cleanedSearchCPF) || {

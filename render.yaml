@@ -1,4 +1,4 @@
-﻿# Exported from Render on 2026-09-04T01:30:42Z
+# Exported from Render on 2026-09-04T01:30:42Z
 version: "1"
 projects:
 - name: pablo
@@ -12,6 +12,10 @@ projects:
       plan: 0.5c-512mb
       envVars:
       - key: GEMINI_API_KEY
+        sync: false
+      - key: ADMIN_CPF
+        sync: false
+      - key: SHEETS_SYNC_URL
         sync: false
       region: oregon
       buildCommand: bun install && bun run build
