@@ -41,13 +41,26 @@ function saveDatabase(data: Ingresso[]) {
 let dbIngressos: Ingresso[] = loadDatabase();
 
 function formatTimestamp(): string {
-  const now = new Date();
-  const pad = (n: number) => n.toString().padStart(2, '0');
-  const dia = pad(now.getDate());
-  const mes = pad(now.getMonth() + 1);
-  const ano = now.getFullYear();
-  const horas = pad(now.getHours());
-  const minutos = pad(now.getMinutes());
+  // Garante que o horário seja SEMPRE o de Brasília (America/Sao_Paulo / UTC-3), mesmo em servidores no exterior como o Render
+  const formatter = new Intl.DateTimeFormat('pt-BR', {
+    timeZone: 'America/Sao_Paulo',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+
+  const parts = formatter.formatToParts(new Date());
+  const getPart = (type: string) => parts.find(p => p.type === type)?.value || '';
+
+  const dia = getPart('day');
+  const mes = getPart('month');
+  const ano = getPart('year');
+  const horas = getPart('hour');
+  const minutos = getPart('minute');
+
   return `${dia}/${mes}/${ano} às ${horas}:${minutos}`;
 }
 
