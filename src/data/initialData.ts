@@ -1,4 +1,4 @@
-﻿import { Ingresso } from '../types';
+import { Ingresso } from '../types';
 
 // Usuario de teste — remova apos validar a tela do participante.
 export const INITIAL_INGRESSOS: Ingresso[] = [
@@ -7,7 +7,7 @@ export const INITIAL_INGRESSOS: Ingresso[] = [
     nome: 'Usuario Teste',
     email: 'teste@evento.com.br',
     telefone: '',
-    cpf: '47836417816',
+    cpf: '12345678910',
     tipo: 3,
     situacao: 'LIBERADO',
     uuid_dia1: 'teste-sabado-001',
