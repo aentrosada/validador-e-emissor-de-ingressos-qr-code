@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { randomUUID } from 'crypto';
 import { createServer as createViteServer } from 'vite';
@@ -9,8 +10,35 @@ import { Ingresso } from './src/types.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// In-memory store
-let dbIngressos: Ingresso[] = [...INITIAL_INGRESSOS];
+// Caminho do arquivo de persistência local para não perder check-ins e UUIDs mesmo com restart
+const DB_FILE = path.join(process.cwd(), 'ingressos_db.json');
+
+function loadDatabase(): Ingresso[] {
+  try {
+    if (fs.existsSync(DB_FILE)) {
+      const data = fs.readFileSync(DB_FILE, 'utf-8');
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        console.log(`[DB] Carregados ${parsed.length} ingressos do arquivo local ingressos_db.json`);
+        return parsed;
+      }
+    }
+  } catch (err) {
+    console.error('[DB] Erro ao ler ingressos_db.json:', err);
+  }
+  return [...INITIAL_INGRESSOS];
+}
+
+function saveDatabase(data: Ingresso[]) {
+  try {
+    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
+  } catch (err) {
+    console.error('[DB] Erro ao salvar ingressos_db.json:', err);
+  }
+}
+
+// In-memory store inicializado com o arquivo persistente
+let dbIngressos: Ingresso[] = loadDatabase();
 
 function formatTimestamp(): string {
   const now = new Date();
@@ -47,7 +75,7 @@ async function startServer() {
   const app = express();
   const PORT = Number(process.env.PORT) || 3000;
   const ADMIN_CPF = process.env.ADMIN_CPF || '39784759870';
-  const SHEETS_SYNC_URL = process.env.SHEETS_SYNC_URL || '';
+  const SHEETS_SYNC_URL = (process.env.SHEETS_SYNC_URL || '').trim();
 
   // Função para sincronizar dados diretamente com a planilha Google via Apps Script Web App
   async function syncCheckinToGoogleSheet(params: {
@@ -57,17 +85,24 @@ async function startServer() {
     uuid: string;
     tipo?: number;
   }) {
-    if (!SHEETS_SYNC_URL) return;
+    if (!SHEETS_SYNC_URL) {
+      console.log('[Google Sheets Sync] SHEETS_SYNC_URL não configurada no ambiente.');
+      return;
+    }
     try {
-      await fetch(SHEETS_SYNC_URL, {
+      console.log(`[Google Sheets Sync] Enviando check-in para Google Sheets: CPF ${params.cpf}...`);
+      // O Google Apps Script precisa seguir redirecionamento 302
+      const res = await fetch(SHEETS_SYNC_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({
           action: 'checkin',
           ...params,
         }),
+        redirect: 'follow',
       });
-      console.log(`[Google Sheets Sync] Check-in sincronizado para CPF ${params.cpf} no Dia ${params.dia}`);
+      const resText = await res.text();
+      console.log(`[Google Sheets Sync] Resposta do Google Sheets: ${resText}`);
     } catch (err) {
       console.error('[Google Sheets Sync Error]:', err);
     }
@@ -77,9 +112,10 @@ async function startServer() {
   async function syncUUIDsToGoogleSheet(items: Ingresso[]) {
     if (!SHEETS_SYNC_URL) return;
     try {
-      await fetch(SHEETS_SYNC_URL, {
+      console.log(`[Google Sheets Sync] Enviando ${items.length} UUIDs para Google Sheets...`);
+      const res = await fetch(SHEETS_SYNC_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({
           action: 'sync_uuids',
           ingressos: items.map(x => ({
@@ -91,8 +127,10 @@ async function startServer() {
             dia2: x.dia2 || '',
           })),
         }),
+        redirect: 'follow',
       });
-      console.log(`[Google Sheets Sync] UUIDs sincronizados na planilha (${items.length} ingressos)`);
+      const resText = await res.text();
+      console.log(`[Google Sheets Sync] Resposta UUIDs do Google Sheets: ${resText}`);
     } catch (err) {
       console.error('[Google Sheets Sync Error]:', err);
     }
@@ -243,6 +281,7 @@ async function startServer() {
         });
       }
       me.dia1 = currentTimestamp;
+      saveDatabase(dbIngressos);
       
       // Sincroniza em segundo plano com a planilha Google
       syncCheckinToGoogleSheet({
@@ -269,6 +308,7 @@ async function startServer() {
         });
       }
       me.dia2 = currentTimestamp;
+      saveDatabase(dbIngressos);
 
       // Sincroniza em segundo plano com a planilha Google
       syncCheckinToGoogleSheet({
@@ -322,6 +362,9 @@ async function startServer() {
       });
     }
 
+    // Persiste no arquivo local
+    saveDatabase(dbIngressos);
+
     // Sincroniza os UUIDs gerados de volta com a planilha do Google Sheets (se configurado)
     syncUUIDsToGoogleSheet(dbIngressos);
 
@@ -340,6 +383,7 @@ async function startServer() {
     } else {
       dbIngressos.forEach(x => { x.dia1 = ''; x.dia2 = ''; });
     }
+    saveDatabase(dbIngressos);
     res.json({ status: 'sucesso', mensagem: 'Check-ins redefinidos.', ingressos: dbIngressos });
   });
 

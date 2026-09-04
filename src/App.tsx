@@ -107,6 +107,10 @@ export default function App() {
               setActiveTab('portal');
             } else {
               setActiveTab(tab);
+              // Sempre atualiza os dados ao navegar entre as abas administrativas
+              if (tab === 'planilha' || tab === 'scanner') {
+                fetchIngressos();
+              }
             }
           }}
           totalIngressos={ingressos.length}
