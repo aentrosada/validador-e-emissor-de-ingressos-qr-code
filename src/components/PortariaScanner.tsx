@@ -157,18 +157,18 @@ export const PortariaScanner: React.FC = () => {
 
       if (data.status === 'sucesso') {
         playAudioBeep('success');
-        // Popup 4s visivel, 10s total de espera para nova leitura
-        startCooldown(10, 4, data);
+        // Popup 7s visivel, 10s total de espera para nova leitura
+        startCooldown(10, 7, data);
       } else {
         playAudioBeep('error');
-        // Popup 3s visivel, 2s para reiniciar leitura (ou 3s acompanhando o popup)
-        startCooldown(2, 3, data);
+        // Popup 5s visivel, 5s total de espera para nova leitura
+        startCooldown(5, 5, data);
       }
     } catch (err: any) {
-      const errorObj: ValidarResponse = { status: 'erro', mensagem: 'Erro de comunicacao com o servidor.' };
+      const errorObj: ValidarResponse = { status: 'erro', mensagem: 'Erro de comunicação com o servidor.' };
       setScanHistory(prev => [errorObj, ...prev.slice(0, 19)]);
       playAudioBeep('error');
-      startCooldown(2, 3, errorObj);
+      startCooldown(5, 5, errorObj);
     } finally {
       setValidating(false);
     }
@@ -197,7 +197,11 @@ export const PortariaScanner: React.FC = () => {
               }`}>
                 {popup.result.status === 'sucesso' ? 'ENTRADA LIBERADA' : 'ENTRADA RECUSADA'}
               </h2>
-              <p className="text-lg text-white/80 mt-3">{popup.result.mensagem}</p>
+              <div className="text-lg text-white/90 mt-3 whitespace-pre-line leading-relaxed">
+                {popup.result.mensagem.split('**').map((part, idx) => 
+                  idx % 2 === 1 ? <strong key={idx} className="font-extrabold text-white underline">{part}</strong> : part
+                )}
+              </div>
             </div>
 
             {popup.result.ingresso && (

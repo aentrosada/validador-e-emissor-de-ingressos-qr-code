@@ -150,16 +150,31 @@ async function startServer() {
     }
 
     if (!me) {
+      // Check if this UUID actually belongs to the OTHER day
+      const belongsToOtherDay = dbIngressos.find(item => 
+        (eventDay === 1 && item.uuid_dia2 && item.uuid_dia2.trim().toLowerCase() === cleanedUUID) ||
+        (eventDay === 2 && item.uuid_dia1 && item.uuid_dia1.trim().toLowerCase() === cleanedUUID)
+      );
+
+      if (belongsToOtherDay) {
+        const diaCorreto = eventDay === 1 ? 'DOMINGO' : 'SÁBADO';
+        return res.status(400).json({
+          status: 'erro',
+          mensagem: `Esse ingresso é para ${diaCorreto}!`,
+          ingresso: belongsToOtherDay,
+        });
+      }
+
       return res.status(404).json({
         status: 'erro',
-        mensagem: `UUID "${uuid}" nao encontrado. Ingresso invalido.`,
+        mensagem: `UUID "${uuid}" não encontrado. Ingresso inválido.`,
       });
     }
 
     if ((me.situacao || '').toUpperCase() !== 'LIBERADO') {
       return res.status(400).json({
         status: 'erro',
-        mensagem: `Ingresso nao liberado (Situacao: "${me.situacao}").`,
+        mensagem: `Ingresso não liberado!\nSituação atual: ${me.situacao}`,
         ingresso: me,
       });
     }
@@ -168,17 +183,17 @@ async function startServer() {
       if (me.dia1 && me.dia1.trim() !== '') {
         return res.status(400).json({
           status: 'erro',
-          mensagem: `Ingresso ja utilizado no SABADO! Check-in em ${me.dia1}.`,
+          mensagem: `Ingresso já utilizado no SÁBADO!\nCheck-in realizado em **${me.dia1}**`,
           ingresso: me,
         });
       }
       me.dia1 = currentTimestamp;
-      return res.json({ status: 'sucesso', mensagem: 'Entrada Liberada no SABADO!', ingresso: me, timestamp: currentTimestamp, diaValidado: 1 });
+      return res.json({ status: 'sucesso', mensagem: 'Entrada Liberada no SÁBADO!', ingresso: me, timestamp: currentTimestamp, diaValidado: 1 });
     } else {
       if (me.dia2 && me.dia2.trim() !== '') {
         return res.status(400).json({
           status: 'erro',
-          mensagem: `Ingresso ja utilizado no DOMINGO! Check-in em ${me.dia2}.`,
+          mensagem: `Ingresso já utilizado no DOMINGO!\nCheck-in realizado em **${me.dia2}**`,
           ingresso: me,
         });
       }
