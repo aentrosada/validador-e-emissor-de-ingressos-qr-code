@@ -29,6 +29,9 @@ export default function App() {
             const adminFlag = !!data.isAdmin;
             setCurrentUser(user);
             setIsAdmin(adminFlag);
+            if (adminFlag) {
+              setActiveTab('scanner');
+            }
           } else {
             localStorage.removeItem('event_participant_cpf');
           }
@@ -63,7 +66,9 @@ export default function App() {
     setCurrentUser(user);
     setIsAdmin(adminStatus);
     localStorage.setItem('event_participant_cpf', user.cpf);
-    if (!adminStatus) {
+    if (adminStatus) {
+      setActiveTab('scanner');
+    } else {
       setActiveTab('portal');
     }
   };

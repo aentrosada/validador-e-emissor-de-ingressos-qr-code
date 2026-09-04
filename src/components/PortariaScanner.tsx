@@ -33,6 +33,34 @@ export const PortariaScanner: React.FC = () => {
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const scannerContainerId = 'qr-reader-viewport';
 
+  // Keep a ref of selectedDia so the html5-qrcode callback always accesses the current day without stale closure
+  const selectedDiaRef = useRef<1 | 2>(selectedDia);
+  useEffect(() => {
+    selectedDiaRef.current = selectedDia;
+  }, [selectedDia]);
+
+  // Click on popup closes in 2 seconds from tap
+  const handlePopupClick = () => {
+    if (!scanLocked && !popup) return;
+    // Set timer to close in 2s
+    if (cooldownRef.current) clearInterval(cooldownRef.current);
+    let remaining = 2;
+    setCooldown(remaining);
+    cooldownRef.current = setInterval(() => {
+      remaining -= 1;
+      setCooldown(remaining);
+      if (remaining <= 0) {
+        if (cooldownRef.current) clearInterval(cooldownRef.current);
+        setScanLocked(false);
+        setPopup(null);
+        setCooldown(0);
+        if (scannerRef.current) {
+          scannerRef.current.resume().catch(() => {});
+        }
+      }
+    }, 1000);
+  };
+
   const playAudioBeep = (type: 'success' | 'error') => {
     if (!soundEnabled) return;
     try {
@@ -146,10 +174,11 @@ export const PortariaScanner: React.FC = () => {
     setValidating(true);
 
     try {
+      const currentDia = selectedDiaRef.current;
       const res = await fetch('/api/validar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uuid: uuidToTest.trim(), dia: selectedDia }),
+        body: JSON.stringify({ uuid: uuidToTest.trim(), dia: currentDia }),
       });
 
       const data: ValidarResponse = await res.json();
@@ -179,11 +208,15 @@ export const PortariaScanner: React.FC = () => {
 
       {/* FULLSCREEN POPUP OVERLAY */}
       {popup && popup.visible && (
-        <div className={`fixed inset-0 z-50 flex flex-col items-center justify-center p-8 ${
-          popup.result.status === 'sucesso'
-            ? 'bg-emerald-950/95'
-            : 'bg-rose-950/95'
-        }`}>
+        <div 
+          onClick={handlePopupClick}
+          className={`fixed inset-0 z-50 flex flex-col items-center justify-center p-8 cursor-pointer select-none ${
+            popup.result.status === 'sucesso'
+              ? 'bg-emerald-950/95'
+              : 'bg-rose-950/95'
+          }`}
+          title="Toque na tela para fechar em 2s"
+        >
           <div className="text-center space-y-6 max-w-md">
             {popup.result.status === 'sucesso' ? (
               <CheckCircle2 className="w-28 h-28 text-emerald-400 mx-auto" />
@@ -221,9 +254,12 @@ export const PortariaScanner: React.FC = () => {
               </div>
             )}
 
-            <div className="flex items-center justify-center gap-2 text-white/50 text-sm">
-              <Clock className="w-4 h-4" />
-              <span>Fechando em {cooldown}s...</span>
+            <div className="flex flex-col items-center justify-center gap-1 text-white/60 text-xs">
+              <div className="flex items-center gap-1.5 font-medium">
+                <Clock className="w-4 h-4" />
+                <span>Fechando em {cooldown}s</span>
+              </div>
+              <span className="text-[11px] text-white/40 italic">(Toque em qualquer lugar para fechar em 2s)</span>
             </div>
           </div>
         </div>

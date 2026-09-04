@@ -52,19 +52,21 @@ export const Header: React.FC<HeaderProps> = ({
           {user ? (
             <div className="flex items-center gap-3 flex-wrap">
               <nav className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800/80 overflow-x-auto">
-                {/* Tab: Ingressos (Always visible to logged-in user) */}
-                <button
-                  id="tab-portal"
-                  onClick={() => setActiveTab('portal')}
-                  className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
-                    activeTab === 'portal'
-                      ? 'bg-indigo-600 text-white shadow-sm font-semibold'
-                      : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-                  }`}
-                >
-                  <QrCode className="w-4 h-4" />
-                  <span>INGRESSOS</span>
-                </button>
+                {/* Tab: Ingressos (Apenas visível para participantes, não para o admin) */}
+                {!isAdmin && (
+                  <button
+                    id="tab-portal"
+                    onClick={() => setActiveTab('portal')}
+                    className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
+                      activeTab === 'portal'
+                        ? 'bg-indigo-600 text-white shadow-sm font-semibold'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                    }`}
+                  >
+                    <QrCode className="w-4 h-4" />
+                    <span>INGRESSOS</span>
+                  </button>
+                )}
 
                 {/* ADMIN-ONLY TABS */}
                 {isAdmin && (

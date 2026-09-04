@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import Papa from 'papaparse';
 import { Ingresso, TipoIngresso } from '../types';
 import { formatCPF, unformatCPF } from '../utils/cpf';
@@ -89,8 +89,24 @@ export const SpreadsheetManager: React.FC<SpreadsheetManagerProps> = ({
       const dia2 = findKey('DIA 2') || findKey('DIA_2') || '';
 
       // Accept pre-existing UUIDs from export; otherwise leave blank (server will generate)
-      const uuid_dia1 = (findKey('UUID_DIA1') || findKey('UUID DIA1') || findKey('UUID SAB') || '').trim() || undefined;
-      const uuid_dia2 = (findKey('UUID_DIA2') || findKey('UUID DIA2') || findKey('UUID DOM') || '').trim() || undefined;
+      let uuid_dia1 = (findKey('UUID_DIA1') || findKey('UUID DIA1') || findKey('UUID SAB') || '').trim() || undefined;
+      let uuid_dia2 = (findKey('UUID_DIA2') || findKey('UUID DIA2') || findKey('UUID DOM') || '').trim() || undefined;
+      const genericUuid = (findKey('UUID') || findKey('ID_INGRESSO') || '').trim();
+
+      // If generic UUID was exported as "uuid1 | uuid2" or single uuid
+      if (genericUuid && !uuid_dia1 && !uuid_dia2) {
+        if (genericUuid.includes('|')) {
+          const parts = genericUuid.split('|').map(s => s.trim());
+          uuid_dia1 = parts[0] || undefined;
+          uuid_dia2 = parts[1] || undefined;
+        } else if (tipo === 1) {
+          uuid_dia1 = genericUuid;
+        } else if (tipo === 2) {
+          uuid_dia2 = genericUuid;
+        } else if (tipo === 3) {
+          uuid_dia1 = genericUuid;
+        }
+      }
 
       return { id: String(idx + 1), nome, email, telefone, cpf, tipo, situacao, uuid_dia1, uuid_dia2, dia1, dia2 };
     });
@@ -148,24 +164,32 @@ export const SpreadsheetManager: React.FC<SpreadsheetManagerProps> = ({
   };
 
   const handleExportCSV = () => {
-    const csvRows = ingressos.map((item) => ({
-      NOME: item.nome,
-      'E-MAIL': item.email,
-      TELEFONE: item.telefone,
-      CPF: item.cpf,
-      TIPO: item.tipo,
-      SITUACAO: item.situacao,
-      UUID_DIA1: item.uuid_dia1 || '',
-      UUID_DIA2: item.uuid_dia2 || '',
-      'DIA 1': item.dia1 || '',
-      'DIA 2': item.dia2 || '',
-    }));
+    const csvRows = ingressos.map((item) => {
+      // Determina o UUID representativo do ingresso
+      const uuidDisplay = item.uuid_dia1 && item.uuid_dia2 
+        ? `${item.uuid_dia1} | ${item.uuid_dia2}`
+        : item.uuid_dia1 || item.uuid_dia2 || '';
+
+      return {
+        'Nome': item.nome,
+        'E-mail': item.email,
+        'Telefone': item.telefone,
+        'CPF': item.cpf,
+        'Tipo': item.tipo,
+        'Situação': item.situacao,
+        'UUID': uuidDisplay,
+        'UUID_DIA1': item.uuid_dia1 || '',
+        'UUID_DIA2': item.uuid_dia2 || '',
+        'Dia 1 (Sábado)': item.dia1 || '',
+        'Dia 2 (Domingo)': item.dia2 || '',
+      };
+    });
     const csvString = Papa.unparse(csvRows);
     const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `ingressos_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `ingressos_backup_${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
   };
 
@@ -341,28 +365,26 @@ export const SpreadsheetManager: React.FC<SpreadsheetManagerProps> = ({
                 <th className="py-3 px-4">Telefone</th>
                 <th className="py-3 px-4">CPF</th>
                 <th className="py-3 px-4">Tipo</th>
-                <th className="py-3 px-4">Situacao</th>
-                <th className="py-3 px-4">QR Sab</th>
-                <th className="py-3 px-4">QR Dom</th>
-                <th className="py-3 px-4">Dia 1</th>
-                <th className="py-3 px-4">Dia 2</th>
-                <th className="py-3 px-4 text-center">Acoes</th>
+                <th className="py-3 px-4">Situação</th>
+                <th className="py-3 px-4">UUID</th>
+                <th className="py-3 px-4">Dia 1 (Sábado)</th>
+                <th className="py-3 px-4">Dia 2 (Domingo)</th>
+                <th className="py-3 px-4 text-center">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 font-mono">
               {filteredList.length === 0 ? (
                 <tr>
-                  <td colSpan={11} className="py-8 text-center text-slate-500 font-sans">
+                  <td colSpan={10} className="py-8 text-center text-slate-500 font-sans">
                     Nenhum ingresso encontrado.
                   </td>
                 </tr>
               ) : (
                 filteredList.map((item) => {
                   const isLiberado = (item.situacao || '').toUpperCase() === 'LIBERADO';
-                  const needsDia1 = item.tipo === 1 || item.tipo === 3;
-                  const needsDia2 = item.tipo === 2 || item.tipo === 3;
-                  const hasQrDia1 = !!item.uuid_dia1;
-                  const hasQrDia2 = !!item.uuid_dia2;
+                  const uuidDisplay = item.uuid_dia1 && item.uuid_dia2
+                    ? `${item.uuid_dia1} | ${item.uuid_dia2}`
+                    : item.uuid_dia1 || item.uuid_dia2 || '—';
 
                   return (
                     <tr key={item.id} className="hover:bg-slate-800/40 transition-colors">
@@ -372,7 +394,7 @@ export const SpreadsheetManager: React.FC<SpreadsheetManagerProps> = ({
                       <td className="py-3 px-4 font-semibold text-slate-200">{formatCPF(item.cpf)}</td>
                       <td className="py-3 px-4">
                         <span className="font-sans text-[11px] font-bold px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
-                          {item.tipo === 1 ? '1 (Sab)' : item.tipo === 2 ? '2 (Dom)' : '3 (Pass)'}
+                          {item.tipo === 1 ? '1 (Sáb)' : item.tipo === 2 ? '2 (Dom)' : '3 (Pass)'}
                         </span>
                       </td>
                       <td className="py-3 px-4">
@@ -381,21 +403,8 @@ export const SpreadsheetManager: React.FC<SpreadsheetManagerProps> = ({
                           : <span className="font-sans text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30">{item.situacao || 'PENDENTE'}</span>
                         }
                       </td>
-                      <td className="py-3 px-4 text-center">
-                        {needsDia1
-                          ? hasQrDia1
-                            ? <CheckCircle2 className="w-4 h-4 text-emerald-400 mx-auto" title={item.uuid_dia1} />
-                            : <XCircle className="w-4 h-4 text-rose-400 mx-auto" title="UUID nao gerado" />
-                          : <span className="text-slate-600">—</span>
-                        }
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        {needsDia2
-                          ? hasQrDia2
-                            ? <CheckCircle2 className="w-4 h-4 text-emerald-400 mx-auto" title={item.uuid_dia2} />
-                            : <XCircle className="w-4 h-4 text-rose-400 mx-auto" title="UUID nao gerado" />
-                          : <span className="text-slate-600">—</span>
-                        }
+                      <td className="py-3 px-4 text-slate-300 text-[11px] font-mono max-w-[180px] truncate" title={uuidDisplay}>
+                        {uuidDisplay}
                       </td>
                       <td className="py-3 px-4">
                         {item.dia1 ? <span className="text-emerald-400 font-semibold">{item.dia1}</span> : <span className="text-slate-600 italic font-sans">—</span>}
