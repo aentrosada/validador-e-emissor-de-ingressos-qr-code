@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
@@ -168,8 +169,9 @@ async function startServer() {
       return res.status(400).json({ sucesso: false, mensagem: 'Por favor, informe um CPF valido.' });
     }
 
+    const currentAdminEnv = (process.env.ADMIN_CPF || '').trim();
     const cleanedSearchCPF = cleanCPF(cpf);
-    const cleanedAdminCPF = cleanCPF(ADMIN_CPF);
+    const cleanedAdminCPF = cleanCPF(currentAdminEnv);
     const isAdmin = Boolean(cleanedAdminCPF) && cleanedSearchCPF === cleanedAdminCPF;
 
     if (isAdmin) {
@@ -178,7 +180,7 @@ async function startServer() {
         nome: 'Administrador da Portaria',
         email: 'admin@evento.com.br',
         telefone: '',
-        cpf: ADMIN_CPF,
+        cpf: currentAdminEnv,
         tipo: 3 as const,
         situacao: 'LIBERADO',
         uuid_dia1: 'admin-dia1',
