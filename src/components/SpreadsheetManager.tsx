@@ -85,8 +85,8 @@ export const SpreadsheetManager: React.FC<SpreadsheetManagerProps> = ({
       const tipoRaw = parseInt(findKey('TIPO') || '3', 10);
       const tipo: TipoIngresso = [1, 2, 3].includes(tipoRaw) ? (tipoRaw as TipoIngresso) : 3;
       const situacao = (findKey('SITUACAO') || findKey('SITUACAO') || findKey('SITUACAO') || 'LIBERADO').trim();
-      const dia1 = findKey('DIA 1') || findKey('DIA_1') || '';
-      const dia2 = findKey('DIA 2') || findKey('DIA_2') || '';
+      const dia1 = findKey('DIA 1 (SÁBADO)') || findKey('DIA 1 (SABADO)') || findKey('DIA 1') || findKey('DIA_1') || findKey('CHECKIN_DIA_1') || findKey('SÁBADO') || findKey('SABADO') || '';
+      const dia2 = findKey('DIA 2 (DOMINGO)') || findKey('DIA 2') || findKey('DIA_2') || findKey('CHECKIN_DIA_2') || findKey('DOMINGO') || '';
 
       // Accept pre-existing UUIDs from export; otherwise leave blank (server will generate)
       let uuid_dia1 = (findKey('UUID_DIA1') || findKey('UUID DIA1') || findKey('UUID SAB') || '').trim() || undefined;

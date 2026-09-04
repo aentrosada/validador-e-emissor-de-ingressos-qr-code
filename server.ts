@@ -353,7 +353,21 @@ async function startServer() {
     const withUUIDs = ingressos.map(ensureUUIDs);
 
     if (overwrite) {
-      dbIngressos = withUUIDs;
+      // Quando sobrescreve com nova planilha, mescla os checkins preexistentes se o novo não tiver
+      dbIngressos = withUUIDs.map(newItem => {
+        const existing = dbIngressos.find(
+          x => (newItem.uuid_dia1 && x.uuid_dia1 === newItem.uuid_dia1) ||
+               (newItem.uuid_dia2 && x.uuid_dia2 === newItem.uuid_dia2) ||
+               (x.cpf && cleanCPF(x.cpf) === cleanCPF(newItem.cpf) && x.tipo === newItem.tipo)
+        );
+        return {
+          ...newItem,
+          uuid_dia1: newItem.uuid_dia1 || existing?.uuid_dia1,
+          uuid_dia2: newItem.uuid_dia2 || existing?.uuid_dia2,
+          dia1: newItem.dia1 || existing?.dia1 || '',
+          dia2: newItem.dia2 || existing?.dia2 || '',
+        };
+      });
     } else {
       withUUIDs.forEach((newItem: Ingresso) => {
         const existingIdx = dbIngressos.findIndex(
@@ -362,12 +376,14 @@ async function startServer() {
                (x.cpf && cleanCPF(x.cpf) === cleanCPF(newItem.cpf) && x.tipo === newItem.tipo)
         );
         if (existingIdx >= 0) {
-          // Keep existing UUIDs, just update other fields
+          // Mantém UUIDs e check-ins existentes caso não venham preenchidos no novo
           dbIngressos[existingIdx] = {
             ...dbIngressos[existingIdx],
             ...newItem,
             uuid_dia1: dbIngressos[existingIdx].uuid_dia1 || newItem.uuid_dia1,
             uuid_dia2: dbIngressos[existingIdx].uuid_dia2 || newItem.uuid_dia2,
+            dia1: newItem.dia1 || dbIngressos[existingIdx].dia1 || '',
+            dia2: newItem.dia2 || dbIngressos[existingIdx].dia2 || '',
           };
         } else {
           dbIngressos.push(newItem);
